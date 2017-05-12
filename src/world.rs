@@ -6,18 +6,42 @@ pub struct World {
 }
 
 impl World {
-    pub fn new(x_width: u8, y_width: u8) -> Self {
+    pub fn new(num_of_columns: u8, num_of_rows: u8) -> Self {
         World {
-          grid: (0..y_width)
+          grid: (0..num_of_rows)
             .map(
-              |_| (0..x_width).map(|_| 0).collect()
+              |_| (0..num_of_columns).map(|_| 0).collect()
             ).collect()
         }
     }
-
-    pub fn tick(&self) {
+    
+    pub fn tick(&mut self) {
         let square = shape::Shape::square();
-        println!("{}", square.show());
+        
+        //  (nth_of_row, nth_of_column)
+        let to_fill = vec![(0, 0), (1, 0), (2, 0), (3, 0)];
+        // let to_fill = vec![(0, 0), (0, 1), (1, 0), (1, 1)];
+        
+        // fill world grid
+        for (nth_of_row, nth_of_column) in to_fill {
+            self.grid = self.grid.iter().enumerate().map(
+                |(i, row)| {
+                    if i == nth_of_row {
+                        let result = row.iter().enumerate().map(|(j, col)| {
+                            if j == nth_of_column {
+                                1
+                            } else {
+                                *col
+                            }
+                        }).collect::<Vec<_>>();
+
+                        result
+                    } else {
+                        row.clone()
+                    }
+                }
+            ).collect::<Vec<_>>();
+        }
     }
 }
 
