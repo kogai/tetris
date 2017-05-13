@@ -33,8 +33,13 @@ impl World {
     }
 
     pub fn tick(&mut self) {
-        let bracket_l = Shape::bracket_l();
-        let to_fill = bracket_l.get_positions();
+        let shape = match self.shape_queue.pop() {
+            Some(s) => s.tick(),
+            None => Shape::bracket_l(), // TODO: randomize
+        };
+
+        let to_fill = shape.get_positions();
+        self.shape_queue.push(shape);
         self.grid = self.fill_world(to_fill);
     }
 }

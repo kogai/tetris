@@ -76,14 +76,14 @@ impl Shape {
     //     ], 0, 0)
     // }
 
-    pub fn tick(&mut self) -> Self {
+    pub fn tick(&self) -> Self {
         use self::Shape::*;
         match self {
-            &mut Square(ref inner) => Square(inner.with_fall()),
-            &mut BracketL(ref inner) => BracketL(inner.with_fall()),
-            &mut BracketR(ref inner) => BracketR(inner.with_fall()),
-            &mut Straight(ref inner) => Straight(inner.with_fall()),
-            &mut TLike(ref inner) => TLike(inner.with_fall()),
+            &Square(ref inner) => Square(inner.with_fall()),
+            &BracketL(ref inner) => BracketL(inner.with_fall()),
+            &BracketR(ref inner) => BracketR(inner.with_fall()),
+            &Straight(ref inner) => Straight(inner.with_fall()),
+            &TLike(ref inner) => TLike(inner.with_fall()),
         }
     }
 
