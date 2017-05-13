@@ -1,3 +1,4 @@
+use rand::random;
 use shape::{PosRow, PosColumn, Grid, Shape};
 
 #[derive(Debug)]
@@ -35,7 +36,7 @@ impl World {
     pub fn tick(&mut self) {
         let shape = match self.shape_queue.pop() {
             Some(s) => s.tick(),
-            None => Shape::bracket_l(), // TODO: randomize
+            None => random::<Shape>(),
         };
 
         let to_fill = shape.get_positions();

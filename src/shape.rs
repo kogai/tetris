@@ -1,3 +1,4 @@
+use rand::{Rand, Rng};
 use world::{show, Block};
 
 pub type Grid = Vec<Vec<u8>>;
@@ -27,6 +28,7 @@ impl Inner {
             .flat_map(|(offset_y, row)| {
                 row.iter()
                     .enumerate()
+                    .filter(|&(_, c)| *c as usize > 0)
                     .map(|(offset_x, _)| {
                         (offset_y as PosRow + self.pos_y, offset_x as PosColumn + self.pos_x)
                     })
@@ -59,8 +61,8 @@ impl Shape {
     pub fn bracket_l() -> Self {
         Shape::BracketL(Inner {
             grid: vec![
-                vec![1],
-                vec![1],
+                vec![1, 0],
+                vec![1, 0],
                 vec![1, 1]
             ],
             pos_x: 0,
@@ -68,13 +70,41 @@ impl Shape {
         })
     }
 
-    // pub fn bracket_r() -> Self {
-    //     Shape::BracketR(vec![
-    //       vec![0,1],
-    //       vec![0,1],
-    //       vec![1,1],
-    //     ], 0, 0)
-    // }
+    pub fn bracket_r() -> Self {
+        Shape::BracketR(Inner {
+            grid: vec![
+                vec![0, 1],
+                vec![0, 1],
+                vec![1, 1]
+            ],
+            pos_x: 0,
+            pos_y: 0,
+        })
+    }
+    
+    pub fn straight() -> Self {
+        Shape::Straight(Inner {
+            grid: vec![
+                vec![1],
+                vec![1],
+                vec![1],
+                vec![1],
+            ],
+            pos_x: 0,
+            pos_y: 0,
+        })
+    }
+
+    pub fn t_like() -> Self {
+        Shape::TLike(Inner {
+            grid: vec![
+                vec![0, 1, 0],
+                vec![1, 1, 1],
+            ],
+            pos_x: 0,
+            pos_y: 0,
+        })
+    }
 
     pub fn tick(&self) -> Self {
         use self::Shape::*;
@@ -108,6 +138,19 @@ impl Block for Shape {
             &BracketR(ref inner) |
             &Straight(ref inner) |
             &TLike(ref inner) => show(&inner.grid),
+        }
+    }
+}
+
+impl Rand for Shape {
+    fn rand<R: Rng>(rng: &mut R) -> Self {
+        let rnd = rng.gen::<u8>();
+        match rnd % 5 {
+            4 => Shape::bracket_l(),
+            3 => Shape::bracket_r(),
+            2 => Shape::straight(),
+            1 => Shape::t_like(),
+            _ => Shape::square(),
         }
     }
 }
