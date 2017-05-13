@@ -2,6 +2,7 @@ extern crate rand;
 
 mod world;
 mod shape;
+mod command;
 
 use world::{World, Block};
 
@@ -13,7 +14,7 @@ fn main() {
     let mut tick_count = 0;
 
     loop {
-        if tick_count > 3 {
+        if tick_count > MAX_LOOP {
             break;
         }
         tick_count = tick_count + 1;

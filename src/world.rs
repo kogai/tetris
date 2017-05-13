@@ -1,21 +1,29 @@
-use rand::random;
+use std::sync::Arc;
+use std::sync::mpsc::{channel, Sender, Receiver};
+
 use shape::{PosRow, PosColumn, Grid, Shape};
+use command::Command;
 
 #[derive(Debug)]
 pub struct World {
     grid: Grid,
     shape_queue: Vec<Shape>,
     fixed: Vec<(PosRow, PosColumn)>,
+    tx: Sender<Command>,
+    rx: Arc<Receiver<Command>>,
 }
 
 impl World {
     pub fn new(num_of_columns: u8, num_of_rows: u8) -> Self {
+        let (tx, rx) = channel::<Command>();
         World {
             grid: (0..num_of_rows)
                 .map(|_| (0..num_of_columns).map(|_| 0).collect())
                 .collect(),
             shape_queue: vec![],
             fixed: vec![],
+            tx,
+            rx: Arc::new(rx),
         }
     }
 
@@ -38,7 +46,7 @@ impl World {
     pub fn tick(&mut self) {
         let shape = match self.shape_queue.pop() {
             Some(s) => s.tick(),
-            None => random::<Shape>(),
+            None => Shape::new(self.rx.clone()),
         };
 
         let mut to_fill = shape.get_positions();

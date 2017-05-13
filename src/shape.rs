@@ -1,5 +1,9 @@
-use rand::{Rand, Rng};
+use std::sync::Arc;
+use std::sync::mpsc::Receiver;
+
+use rand::{Rng, thread_rng};
 use world::{show, Block};
+use command::Command;
 
 pub type Grid = Vec<Vec<u8>>;
 pub type PosColumn = u8;
@@ -10,12 +14,14 @@ pub struct Inner {
     grid: Grid,
     pos_x: PosColumn,
     pos_y: PosRow,
+    rx: Arc<Receiver<Command>>,
 }
 
 impl Inner {
-    fn new(grid: Grid) -> Self {
+    fn new(grid: Grid, rx: Arc<Receiver<Command>>) -> Self {
         Inner {
             grid,
+            rx,
             pos_x: 0,
             pos_y: 0,
         }
@@ -26,6 +32,7 @@ impl Inner {
             grid: self.grid.to_owned(),
             pos_x: self.pos_x,
             pos_y: self.pos_y + 1,
+            rx: self.rx.clone(),
         }
     }
 
@@ -56,42 +63,54 @@ pub enum Shape {
 }
 
 impl Shape {
-    pub fn square() -> Self {
+    fn square(rx: Arc<Receiver<Command>>) -> Self {
         Shape::Square(Inner::new(vec![
                 vec![1, 1], vec![1, 1]
-            ]))
+            ], rx))
     }
 
-    pub fn bracket_l() -> Self {
+    fn bracket_l(rx: Arc<Receiver<Command>>) -> Self {
         Shape::BracketL(Inner::new(vec![
                 vec![1, 0],
                 vec![1, 0],
                 vec![1, 1]
-            ]))
+            ], rx))
     }
 
-    pub fn bracket_r() -> Self {
+    fn bracket_r(rx: Arc<Receiver<Command>>) -> Self {
         Shape::BracketR(Inner::new(vec![
                 vec![0, 1],
                 vec![0, 1],
                 vec![1, 1]
-            ]))
+            ], rx))
     }
     
-    pub fn straight() -> Self {
+    fn straight(rx: Arc<Receiver<Command>>) -> Self {
         Shape::Straight(Inner::new(vec![
                 vec![1],
                 vec![1],
                 vec![1],
                 vec![1],
-            ]))
+            ], rx))
     }
 
-    pub fn t_like() -> Self {
+    fn t_like(rx: Arc<Receiver<Command>>) -> Self {
         Shape::TLike(Inner::new(vec![
                 vec![0, 1, 0],
                 vec![1, 1, 1],
-            ]))
+            ], rx))
+    }
+
+    pub fn new(rx: Arc<Receiver<Command>>) -> Self {
+        let mut rng = thread_rng();
+        let rnd = rng.gen::<u8>();
+        match rnd % 5 {
+            4 => Shape::bracket_l(rx),
+            3 => Shape::bracket_r(rx),
+            2 => Shape::straight(rx),
+            1 => Shape::t_like(rx),
+            _ => Shape::square(rx),
+        }
     }
 
     pub fn tick(&self) -> Self {
@@ -126,19 +145,6 @@ impl Block for Shape {
             &BracketR(ref inner) |
             &Straight(ref inner) |
             &TLike(ref inner) => show(&inner.grid),
-        }
-    }
-}
-
-impl Rand for Shape {
-    fn rand<R: Rng>(rng: &mut R) -> Self {
-        let rnd = rng.gen::<u8>();
-        match rnd % 5 {
-            4 => Shape::bracket_l(),
-            3 => Shape::bracket_r(),
-            2 => Shape::straight(),
-            1 => Shape::t_like(),
-            _ => Shape::square(),
         }
     }
 }
