@@ -1,14 +1,14 @@
 use world::{show, Block};
 
 pub type Grid = Vec<Vec<u8>>;
-pub type PosX = u8;
-pub type PosY = u8;
+pub type PosColumn = u8;
+pub type PosRow = u8;
 
 #[derive(Debug)]
 pub struct Inner {
   grid: Grid,
-  pos_x: PosX,
-  pos_y: PosY,
+  pos_x: PosColumn,
+  pos_y: PosRow,
 }
 
 impl Inner {
@@ -16,10 +16,10 @@ impl Inner {
         Inner { grid: self.grid.clone(), pos_x: self.pos_x, pos_y: self.pos_y + 1 }
     }
 
-    fn get_positions(&self) -> Vec<(PosY, PosX)> {
+    fn get_positions(&self) -> Vec<(PosRow, PosColumn)> {
         self.grid.iter().enumerate().flat_map(|(offset_y, row)| {
             row.iter().enumerate().map(|(offset_x, _)| {
-                (offset_y as PosY + self.pos_y, offset_x as PosX + self.pos_x)
+                (offset_y as PosRow + self.pos_y, offset_x as PosColumn + self.pos_x)
             }).collect::<Vec<_>>()
         }).collect::<Vec<_>>()
     }
@@ -73,13 +73,13 @@ impl Shape {
       }
     }
 
-    pub fn get_positions(&self) -> Vec<(PosY, PosX)> {
+    pub fn get_positions(&self) -> Vec<(PosRow, PosColumn)> {
         use self::Shape::*;
         match self {
-            &Square(ref inner) => inner.get_positions(),
-            &BracketL(ref inner) => inner.get_positions(),
-            &BracketR(ref inner) => inner.get_positions(),
-            &Straight(ref inner) => inner.get_positions(),
+            &Square(ref inner) |
+            &BracketL(ref inner) |
+            &BracketR(ref inner) |
+            &Straight(ref inner) |
             &TLike(ref inner) => inner.get_positions(),
         }
     }
