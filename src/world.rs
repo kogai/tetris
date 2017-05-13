@@ -5,6 +5,7 @@ use shape::{PosRow, PosColumn, Grid, Shape};
 pub struct World {
     grid: Grid,
     shape_queue: Vec<Shape>,
+    fixed: Vec<(PosRow, PosColumn)>,
 }
 
 impl World {
@@ -14,6 +15,7 @@ impl World {
                 .map(|_| (0..num_of_columns).map(|_| 0).collect())
                 .collect(),
             shape_queue: vec![],
+            fixed: vec![],
         }
     }
 
@@ -39,9 +41,21 @@ impl World {
             None => random::<Shape>(),
         };
 
-        let to_fill = shape.get_positions();
-        self.shape_queue.push(shape);
-        self.grid = self.fill_world(to_fill);
+        let mut to_fill = shape.get_positions();
+        let is_landed = to_fill.iter().any(|&(pos_r, _)| {
+            let on_world = pos_r as usize  >= self.grid.len() - 1;
+            let on_exist = self.fixed.iter().any(|&(exist_pos_r, _)| pos_r + 1 == exist_pos_r);
+            on_world || on_exist
+        });
+
+        if is_landed {
+            self.fixed.append(&mut to_fill);
+        } else {
+            self.shape_queue.push(shape);
+        };
+
+        let fill = [to_fill.as_slice(), self.fixed.as_slice()].concat();
+        self.grid = self.fill_world(fill);
     }
 }
 
