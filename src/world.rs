@@ -16,19 +16,22 @@ impl World {
     }
     
     pub fn tick(&mut self) {
-        let square = shape::Shape::square();
+        let square = shape::Shape::square().tick();
         
         //  (nth_of_row, nth_of_column)
-        let to_fill = vec![(0, 0), (1, 0), (2, 0), (3, 0)];
-        // let to_fill = vec![(0, 0), (0, 1), (1, 0), (1, 1)];
+        // let to_fill = vec![(0, 0), (1, 0), (2, 0), (3, 0)];
+        let to_fill = square.get_positions();
+        println!("{:?}", shape::Shape::square());
+        println!("{:?}", shape::Shape::square().tick());
         
         // fill world grid
+        // TODO: optimize performance
         for (nth_of_row, nth_of_column) in to_fill {
             self.grid = self.grid.iter().enumerate().map(
                 |(i, row)| {
-                    if i == nth_of_row {
+                    if i as u8 == nth_of_row {
                         let result = row.iter().enumerate().map(|(j, col)| {
-                            if j == nth_of_column {
+                            if j as u8 == nth_of_column {
                                 1
                             } else {
                                 *col
