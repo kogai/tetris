@@ -13,9 +13,17 @@ pub struct Inner {
 }
 
 impl Inner {
+    fn new(grid: Grid) -> Self {
+        Inner {
+            grid,
+            pos_x: 0,
+            pos_y: 0,
+        }
+    }
+
     fn with_fall(&self) -> Self {
         Inner {
-            grid: self.grid.clone(),
+            grid: self.grid.to_owned(),
             pos_x: self.pos_x,
             pos_y: self.pos_y + 1,
         }
@@ -49,61 +57,41 @@ pub enum Shape {
 
 impl Shape {
     pub fn square() -> Self {
-        Shape::Square(Inner {
-            grid: vec![
+        Shape::Square(Inner::new(vec![
                 vec![1, 1], vec![1, 1]
-            ],
-            pos_x: 0,
-            pos_y: 0,
-        })
+            ]))
     }
 
     pub fn bracket_l() -> Self {
-        Shape::BracketL(Inner {
-            grid: vec![
+        Shape::BracketL(Inner::new(vec![
                 vec![1, 0],
                 vec![1, 0],
                 vec![1, 1]
-            ],
-            pos_x: 0,
-            pos_y: 0,
-        })
+            ]))
     }
 
     pub fn bracket_r() -> Self {
-        Shape::BracketR(Inner {
-            grid: vec![
+        Shape::BracketR(Inner::new(vec![
                 vec![0, 1],
                 vec![0, 1],
                 vec![1, 1]
-            ],
-            pos_x: 0,
-            pos_y: 0,
-        })
+            ]))
     }
     
     pub fn straight() -> Self {
-        Shape::Straight(Inner {
-            grid: vec![
+        Shape::Straight(Inner::new(vec![
                 vec![1],
                 vec![1],
                 vec![1],
                 vec![1],
-            ],
-            pos_x: 0,
-            pos_y: 0,
-        })
+            ]))
     }
 
     pub fn t_like() -> Self {
-        Shape::TLike(Inner {
-            grid: vec![
+        Shape::TLike(Inner::new(vec![
                 vec![0, 1, 0],
                 vec![1, 1, 1],
-            ],
-            pos_x: 0,
-            pos_y: 0,
-        })
+            ]))
     }
 
     pub fn tick(&self) -> Self {
