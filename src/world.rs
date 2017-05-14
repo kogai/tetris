@@ -16,7 +16,7 @@ impl World {
                 .collect(),
             shape_queue: vec![],
             fixed: vec![],
-            rx,
+            rx: rx,
         }
     }
 

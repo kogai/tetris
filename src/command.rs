@@ -1,5 +1,5 @@
 use std::thread::{spawn, sleep};
-use std::time::{Duration};
+use std::time::Duration;
 use chan::Sender;
 use INTERVAL;
 
@@ -10,9 +10,7 @@ pub struct Controller {
 
 impl Controller {
     pub fn new(tx: Sender<Command>) -> Self {
-        Controller {
-            tx,
-        }
+        Controller { tx: tx }
     }
 
     pub fn send(&self, command: Command) {
@@ -21,11 +19,9 @@ impl Controller {
 
     pub fn fall_with_interval(&self) {
         let tx = self.tx.clone();
-        spawn(move || {
-            loop {
-                tx.send(Command::Bottom);
-                sleep(Duration::from_millis(INTERVAL));
-            }
+        spawn(move || loop {
+            tx.send(Command::Bottom);
+            sleep(Duration::from_millis(INTERVAL));
         });
     }
 }
