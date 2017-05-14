@@ -1,8 +1,4 @@
-use std::sync::Arc;
-use std::sync::mpsc::{channel, Sender};
-
 use shape::{PosRow, PosColumn, Grid, Shape, CommandReceiver};
-use command::Command;
 
 #[derive(Debug)]
 pub struct World {
@@ -43,7 +39,7 @@ impl World {
 
     pub fn tick(&mut self) {
         let shape = match self.shape_queue.pop() {
-            Some(s) => s.tick(),
+            Some(shape) => shape,
             None => Shape::new(self.rx.clone()),
         };
 

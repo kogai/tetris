@@ -1,7 +1,8 @@
-use std::sync::Arc;
-use std::sync::mpsc::Receiver;
+use std::thread::spawn;
 
 use rand::{Rng, thread_rng};
+use chan::Receiver;
+
 use world::{show, Block};
 use command::Command;
 use COLUMNS;
@@ -9,7 +10,7 @@ use COLUMNS;
 pub type Grid = Vec<Vec<u8>>;
 pub type PosColumn = u8;
 pub type PosRow = u8;
-pub type CommandReceiver = Arc<Receiver<Command>>;
+pub type CommandReceiver = Receiver<Command>;
 
 #[derive(Debug)]
 pub struct Inner {
