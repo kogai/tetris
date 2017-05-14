@@ -9,21 +9,18 @@ pub struct World {
     grid: Grid,
     shape_queue: Vec<Shape>,
     fixed: Vec<(PosRow, PosColumn)>,
-    tx: Sender<Command>,
     rx: CommandReceiver,
 }
 
 impl World {
-    pub fn new(num_of_columns: u8, num_of_rows: u8) -> Self {
-        let (tx, rx) = channel::<Command>();
+    pub fn new(num_of_columns: u8, num_of_rows: u8, rx: CommandReceiver) -> Self {
         World {
             grid: (0..num_of_rows)
                 .map(|_| (0..num_of_columns).map(|_| 0).collect())
                 .collect(),
             shape_queue: vec![],
             fixed: vec![],
-            tx: tx,
-            rx: Arc::new(rx),
+            rx,
         }
     }
 
@@ -42,13 +39,6 @@ impl World {
                     .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>()
-    }
-
-    pub fn send(&self, command: Command) {
-        match self.tx.send(command) {
-            Ok(_) => (),
-            Err(error) => println!("{}", error),
-        }
     }
 
     pub fn tick(&mut self) {

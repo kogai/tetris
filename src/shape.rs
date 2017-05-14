@@ -27,18 +27,19 @@ impl Inner {
             pos_x: 0,
             pos_y: 0,
         };
-
         inner.listen();
         inner
     }
 
     fn with_fall(&self) -> Self {
-        Inner {
+        let mut inner = Inner {
             grid: self.grid.to_owned(),
             pos_x: self.pos_x,
             pos_y: self.pos_y + 1,
             rx: self.rx.clone(),
-        }
+        };
+        inner.listen();
+        inner
     }
 
     fn listen(&mut self) {
