@@ -1,7 +1,8 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::sync::mpsc::{channel, Sender, Receiver};
+use std::thread::spawn;
 
-use shape::{PosRow, PosColumn, Grid, Shape};
+use shape::{PosRow, PosColumn, Grid, Shape, CommandReceiver};
 use command::Command;
 
 #[derive(Debug)]
@@ -10,7 +11,7 @@ pub struct World {
     shape_queue: Vec<Shape>,
     fixed: Vec<(PosRow, PosColumn)>,
     tx: Sender<Command>,
-    rx: Arc<Receiver<Command>>,
+    rx: CommandReceiver,
 }
 
 impl World {
@@ -23,7 +24,7 @@ impl World {
             shape_queue: vec![],
             fixed: vec![],
             tx,
-            rx: Arc::new(rx),
+            rx: Arc::new(Mutex::new(rx)),
         }
     }
 
@@ -41,6 +42,13 @@ impl World {
                     .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>()
+    }
+
+    pub fn send(&self, command: Command) {
+        match self.tx.send(command) {
+            Ok(_) => (),
+            Err(error) => println!("{}", error),
+        }
     }
 
     pub fn tick(&mut self) {

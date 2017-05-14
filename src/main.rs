@@ -18,7 +18,13 @@ fn main() {
             break;
         }
         tick_count = tick_count + 1;
+        match tick_count {
+            1 => game.send(Command::Left),
+            2 => game.send(Command::Right),
+            _ => game.send(Command::Bottom),
+        };
         game.tick();
+
         println!("{}", game.show());
         println!("---");
     }

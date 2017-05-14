@@ -2,6 +2,5 @@
 pub enum Command {
     Left,
     Right,
-    Top,
     Bottom,
 }

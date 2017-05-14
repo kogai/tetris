@@ -1,5 +1,6 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::sync::mpsc::Receiver;
+use std::thread::{spawn, JoinHandle};
 
 use rand::{Rng, thread_rng};
 use world::{show, Block};
@@ -9,22 +10,30 @@ pub type Grid = Vec<Vec<u8>>;
 pub type PosColumn = u8;
 pub type PosRow = u8;
 
+pub type CommandReceiver = Arc<Mutex<Receiver<Command>>>;
+
 #[derive(Debug)]
 pub struct Inner {
     grid: Grid,
     pos_x: PosColumn,
     pos_y: PosRow,
-    rx: Arc<Receiver<Command>>,
+    rx: CommandReceiver,
 }
 
 impl Inner {
-    fn new(grid: Grid, rx: Arc<Receiver<Command>>) -> Self {
-        Inner {
+    fn new(grid: Grid, rx: CommandReceiver) -> Self {
+        let mut inner = Inner {
             grid,
             rx,
             pos_x: 0,
             pos_y: 0,
-        }
+        };
+
+        spawn(move || {
+            // let inner = inner.clone();
+            // inner.clone().listen()
+        });
+        inner
     }
 
     fn with_fall(&self) -> Self {
@@ -33,6 +42,17 @@ impl Inner {
             pos_x: self.pos_x,
             pos_y: self.pos_y + 1,
             rx: self.rx.clone(),
+        }
+    }
+
+    fn listen(&mut self) {
+        for command in self.rx.lock().unwrap().recv() {
+            use Command::*;
+            match command {
+                Left => println!("left"),
+                Right => println!("right"),
+                Bottom => println!("bottom"),
+            }
         }
     }
 
@@ -63,13 +83,13 @@ pub enum Shape {
 }
 
 impl Shape {
-    fn square(rx: Arc<Receiver<Command>>) -> Self {
+    fn square(rx: CommandReceiver) -> Self {
         Shape::Square(Inner::new(vec![
                 vec![1, 1], vec![1, 1]
             ], rx))
     }
 
-    fn bracket_l(rx: Arc<Receiver<Command>>) -> Self {
+    fn bracket_l(rx: CommandReceiver) -> Self {
         Shape::BracketL(Inner::new(vec![
                 vec![1, 0],
                 vec![1, 0],
@@ -77,7 +97,7 @@ impl Shape {
             ], rx))
     }
 
-    fn bracket_r(rx: Arc<Receiver<Command>>) -> Self {
+    fn bracket_r(rx: CommandReceiver) -> Self {
         Shape::BracketR(Inner::new(vec![
                 vec![0, 1],
                 vec![0, 1],
@@ -85,7 +105,7 @@ impl Shape {
             ], rx))
     }
     
-    fn straight(rx: Arc<Receiver<Command>>) -> Self {
+    fn straight(rx: CommandReceiver) -> Self {
         Shape::Straight(Inner::new(vec![
                 vec![1],
                 vec![1],
@@ -94,14 +114,14 @@ impl Shape {
             ], rx))
     }
 
-    fn t_like(rx: Arc<Receiver<Command>>) -> Self {
+    fn t_like(rx: CommandReceiver) -> Self {
         Shape::TLike(Inner::new(vec![
                 vec![0, 1, 0],
                 vec![1, 1, 1],
             ], rx))
     }
 
-    pub fn new(rx: Arc<Receiver<Command>>) -> Self {
+    pub fn new(rx: CommandReceiver) -> Self {
         let mut rng = thread_rng();
         let rnd = rng.gen::<u8>();
         match rnd % 5 {
@@ -132,6 +152,17 @@ impl Shape {
             &BracketR(ref inner) |
             &Straight(ref inner) |
             &TLike(ref inner) => inner.get_positions(),
+        }
+    }
+
+    pub fn listen(&mut self) {
+        use self::Shape::*;
+        match self {
+            &mut Square(ref mut inner) |
+            &mut BracketL(ref mut inner) |
+            &mut BracketR(ref mut inner) |
+            &mut Straight(ref mut inner) |
+            &mut TLike(ref mut inner) => inner.listen(),
         }
     }
 }
