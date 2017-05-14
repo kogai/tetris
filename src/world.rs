@@ -1,6 +1,5 @@
-use std::sync::{Arc, Mutex};
-use std::sync::mpsc::{channel, Sender, Receiver};
-use std::thread::spawn;
+use std::sync::Arc;
+use std::sync::mpsc::{channel, Sender};
 
 use shape::{PosRow, PosColumn, Grid, Shape, CommandReceiver};
 use command::Command;
@@ -23,8 +22,8 @@ impl World {
                 .collect(),
             shape_queue: vec![],
             fixed: vec![],
-            tx,
-            rx: Arc::new(Mutex::new(rx)),
+            tx: tx,
+            rx: Arc::new(rx),
         }
     }
 
@@ -36,7 +35,8 @@ impl World {
                 row.iter()
                     .enumerate()
                     .map(|(j, _)| {
-                        let is_matched_position = to_fill.iter().any(|&(r, c)| r as usize == i && c as usize == j);
+                        let is_matched_position = to_fill.iter()
+                            .any(|&(r, c)| r as usize == i && c as usize == j);
                         if is_matched_position { 1 } else { 0 }
                     })
                     .collect::<Vec<_>>()
@@ -59,7 +59,7 @@ impl World {
 
         let mut to_fill = shape.get_positions();
         let is_landed = to_fill.iter().any(|&(pos_r, _)| {
-            let on_world = pos_r as usize  >= self.grid.len() - 1;
+            let on_world = pos_r as usize >= self.grid.len() - 1;
             let on_exist = self.fixed.iter().any(|&(exist_pos_r, _)| pos_r + 1 == exist_pos_r);
             on_world || on_exist
         });

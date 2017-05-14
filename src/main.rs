@@ -5,12 +5,13 @@ mod shape;
 mod command;
 
 use world::{World, Block};
+use command::Command;
 
 static COLMUN: u8 = 10;
 static ROWS: u8 = 14;
 
 fn main() {
-    let mut game = World::new(COLMUN, ROWS);
+    let mut game = World::new(COLUMNS, ROWS);
     let mut tick_count = 0;
 
     loop {
@@ -18,6 +19,7 @@ fn main() {
             break;
         }
         tick_count = tick_count + 1;
+
         match tick_count {
             1 => game.send(Command::Left),
             2 => game.send(Command::Right),

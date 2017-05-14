@@ -1,16 +1,15 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::sync::mpsc::Receiver;
-use std::thread::{spawn, JoinHandle};
 
 use rand::{Rng, thread_rng};
 use world::{show, Block};
 use command::Command;
+use COLUMNS;
 
 pub type Grid = Vec<Vec<u8>>;
 pub type PosColumn = u8;
 pub type PosRow = u8;
-
-pub type CommandReceiver = Arc<Mutex<Receiver<Command>>>;
+pub type CommandReceiver = Arc<Receiver<Command>>;
 
 #[derive(Debug)]
 pub struct Inner {
@@ -23,16 +22,13 @@ pub struct Inner {
 impl Inner {
     fn new(grid: Grid, rx: CommandReceiver) -> Self {
         let mut inner = Inner {
-            grid,
-            rx,
+            grid: grid,
+            rx: rx,
             pos_x: 0,
             pos_y: 0,
         };
 
-        spawn(move || {
-            // let inner = inner.clone();
-            // inner.clone().listen()
-        });
+        inner.listen();
         inner
     }
 
@@ -46,12 +42,27 @@ impl Inner {
     }
 
     fn listen(&mut self) {
-        for command in self.rx.lock().unwrap().recv() {
+        for command in self.rx.recv() {
             use Command::*;
             match command {
-                Left => println!("left"),
-                Right => println!("right"),
-                Bottom => println!("bottom"),
+                Left => {
+                    println!("left");
+                    if self.pos_x > 0 {
+                        self.pos_x -= 1;
+                    }
+                }
+                Right => {
+                    println!("right");
+                    if self.pos_x < COLUMNS - 1 {
+                        self.pos_x += 1;
+                    }
+                }
+                Bottom => {
+                    println!("bottom");
+                    if !self.is_on_world() {
+                        self.pos_y += 1;
+                    }
+                }
             }
         }
     }
@@ -71,6 +82,12 @@ impl Inner {
             })
             .collect::<Vec<_>>()
     }
+
+    fn is_on_world(&self) -> bool {
+        self.get_positions()
+            .iter()
+            .any(|&(pos_r, _)| pos_r as usize >= self.grid.len() - 1)
+    }
 }
 
 #[derive(Debug)]
@@ -84,41 +101,23 @@ pub enum Shape {
 
 impl Shape {
     fn square(rx: CommandReceiver) -> Self {
-        Shape::Square(Inner::new(vec![
-                vec![1, 1], vec![1, 1]
-            ], rx))
+        Shape::Square(Inner::new(vec![vec![1, 1], vec![1, 1]], rx))
     }
 
     fn bracket_l(rx: CommandReceiver) -> Self {
-        Shape::BracketL(Inner::new(vec![
-                vec![1, 0],
-                vec![1, 0],
-                vec![1, 1]
-            ], rx))
+        Shape::BracketL(Inner::new(vec![vec![1, 0], vec![1, 0], vec![1, 1]], rx))
     }
 
     fn bracket_r(rx: CommandReceiver) -> Self {
-        Shape::BracketR(Inner::new(vec![
-                vec![0, 1],
-                vec![0, 1],
-                vec![1, 1]
-            ], rx))
+        Shape::BracketR(Inner::new(vec![vec![0, 1], vec![0, 1], vec![1, 1]], rx))
     }
-    
+
     fn straight(rx: CommandReceiver) -> Self {
-        Shape::Straight(Inner::new(vec![
-                vec![1],
-                vec![1],
-                vec![1],
-                vec![1],
-            ], rx))
+        Shape::Straight(Inner::new(vec![vec![1], vec![1], vec![1], vec![1]], rx))
     }
 
     fn t_like(rx: CommandReceiver) -> Self {
-        Shape::TLike(Inner::new(vec![
-                vec![0, 1, 0],
-                vec![1, 1, 1],
-            ], rx))
+        Shape::TLike(Inner::new(vec![vec![0, 1, 0], vec![1, 1, 1]], rx))
     }
 
     pub fn new(rx: CommandReceiver) -> Self {
@@ -152,17 +151,6 @@ impl Shape {
             &BracketR(ref inner) |
             &Straight(ref inner) |
             &TLike(ref inner) => inner.get_positions(),
-        }
-    }
-
-    pub fn listen(&mut self) {
-        use self::Shape::*;
-        match self {
-            &mut Square(ref mut inner) |
-            &mut BracketL(ref mut inner) |
-            &mut BracketR(ref mut inner) |
-            &mut Straight(ref mut inner) |
-            &mut TLike(ref mut inner) => inner.listen(),
         }
     }
 }
