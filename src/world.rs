@@ -46,10 +46,6 @@ impl World {
             Some(shape) => shape,
             None => Shape::new(),
         };
-        let shape = match self.rx.try_recv() {
-            Ok(cmd) => shape.move_to(cmd),
-            Err(_) => shape,
-        };
 
         let mut to_fill = shape.get_positions();
         let is_landed = to_fill.iter().any(|&(pos_r, _)| {
@@ -61,6 +57,10 @@ impl World {
         if is_landed {
             self.fixed.append(&mut to_fill);
         } else {
+            let shape = match self.rx.try_recv() {
+                Ok(cmd) => shape.move_to(cmd),
+                Err(_) => shape,
+            };
             self.shape_queue.push(shape);
         };
 

@@ -28,7 +28,6 @@ impl Inner {
         use Command::*;
         match command {
             Left if self.pos_x > 0 => {
-                println!("left");
                 Inner {
                     grid: self.grid.clone(),
                     pos_x: self.pos_x - 1,
@@ -36,22 +35,20 @@ impl Inner {
                 }
             }
             Right if self.pos_x < COLUMNS - 1 => {
-                println!("right");
                 Inner {
                     grid: self.grid.clone(),
                     pos_x: self.pos_x + 1,
                     pos_y: self.pos_y,
                 }
             }
-            Bottom if !self.is_on_world() => {
-                println!("bottom");
+            Bottom => {
                 Inner {
                     grid: self.grid.clone(),
                     pos_x: self.pos_x,
                     pos_y: self.pos_y + 1,
                 }
             }
-            _ => self.clone()
+            _ => self.clone(), 
         }
     }
 
@@ -69,12 +66,6 @@ impl Inner {
                     .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>()
-    }
-
-    fn is_on_world(&self) -> bool {
-        self.get_positions()
-            .iter()
-            .any(|&(pos_r, _)| pos_r as usize >= self.grid.len() - 1)
     }
 }
 

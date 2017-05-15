@@ -14,13 +14,16 @@ impl Controller {
     }
 
     pub fn send(&self, command: Command) {
-        self.tx.send(command);
+        self.tx.send(command).expect("Fail at Command");
     }
 
     pub fn fall_with_interval(&self) {
         let tx = self.tx.clone();
         spawn(move || loop {
-            tx.send(Command::Bottom);
+            match tx.send(Command::Bottom) {
+                Ok(_) => (),
+                Err(error) => println!("error {:?}", error),
+            };
             sleep(Duration::from_millis(INTERVAL));
         });
     }
