@@ -1,4 +1,8 @@
-use shape::{PosRow, PosColumn, Grid, Shape, CommandReceiver};
+use std::sync::mpsc::Receiver;
+use shape::{PosRow, PosColumn, Grid, Shape};
+use command::Command;
+
+type CommandReceiver = Receiver<Command>;
 
 #[derive(Debug)]
 pub struct World {
@@ -40,7 +44,11 @@ impl World {
     pub fn tick(&mut self) {
         let shape = match self.shape_queue.pop() {
             Some(shape) => shape,
-            None => Shape::new(self.rx.clone()),
+            None => Shape::new(),
+        };
+        let shape = match self.rx.try_recv() {
+            Ok(cmd) => shape.move_to(cmd),
+            Err(_) => shape,
         };
 
         let mut to_fill = shape.get_positions();

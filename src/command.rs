@@ -1,6 +1,6 @@
 use std::thread::{spawn, sleep};
 use std::time::Duration;
-use chan::Sender;
+use std::sync::mpsc::Sender;
 use INTERVAL;
 
 #[derive(Debug, Clone)]

@@ -1,20 +1,20 @@
 extern crate rand;
-extern crate chan;
 
 mod world;
 mod shape;
 mod command;
 
-use chan::async;
+use std::sync::mpsc::channel;
 use world::{World, Block};
 use command::{Command, Controller};
 
-static COLMUN: u8 = 10;
+static COLUMNS: u8 = 10;
 static ROWS: u8 = 14;
 static INTERVAL: u64 = 10;
+static MAX_LOOP: u8 = 4;
 
 fn main() {
-    let (tx, rx) = async::<_>();
+    let (tx, rx) = channel::<_>();
     let controller = Controller::new(tx);
     let mut game = World::new(COLUMNS, ROWS, rx);
     
